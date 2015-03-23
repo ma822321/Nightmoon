@@ -90,11 +90,11 @@ namespace Oracle
             }
 
             Origin = new Menu("花边-神谕", "oracle", true);
-            净化装备.Initialize(Origin);
-            防守装备.Initialize(Origin);
+            净化.Initialize(Origin);
+            防守.Initialize(Origin);
             召唤师技能.Initialize(Origin);
-            进攻装备.Initialize(Origin);
-            药瓶.Initialize(Origin);
+            进攻.Initialize(Origin);
+            药剂大师.Initialize(Origin);
             自动法术.Initialize(Origin);
 
             var config = new Menu("净化设置", "oracleconfig");
