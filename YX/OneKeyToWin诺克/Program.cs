@@ -17,17 +17,16 @@ namespace Darius
         private static Orbwalking.Orbwalker Orbwalker;
         private static readonly List<Spell> SpellList = new List<Spell>();
         private static Spell Q, W, E, R;
-        private static Menu _config;
-
+        public static Menu Config;
         public static SpellSlot IgniteSlot;
         public static Items.Item Hydra;
         public static Items.Item Tiamat;
         public static Items.Item Randuin;
-        public static int QMANA;
-        public static int WMANA;
-        public static int EMANA;
-        public static int RMANA;
-
+        public static float QMANA;
+        public static float WMANA;
+        public static float EMANA;
+        public static float RMANA;
+        public static bool Farm;
         private static void Main(string[] args)
         {
             CustomEvents.Game.OnGameLoad += Game_OnGameLoad;
@@ -49,105 +48,144 @@ namespace Darius
             SpellList.Add(E);
             SpellList.Add(R);
 
-            IgniteSlot = ObjectManager.Player.GetSpellSlot("SummonerDot");
-            Tiamat = new Items.Item(3077, 375);
-            Hydra = new Items.Item(3074, 375);
-            Randuin = new Items.Item(3143, 500);
-            _config = new Menu("OneKeyToWin诺克", "Darius", true);
+            Config = new Menu("花边-OneKeyToWin诺克", ChampionName, true);
+            var targetSelectorMenu = new Menu("目标 选择", "Target Selector");
+            TargetSelector.AddToMenu(targetSelectorMenu);
+            Config.AddSubMenu(targetSelectorMenu);
 
-            _config.AddSubMenu(new Menu("走砍 设置", "Orbwalking"));
-            Orbwalker = new Orbwalking.Orbwalker(_config.SubMenu("Orbwalking"));
+            //Orbwalker submenu
+            Config.AddSubMenu(new Menu("走砍 设置", "Orbwalking"));
 
-            _config.AddSubMenu(new Menu("连招 设置", "Combo"));
-            _config.SubMenu("Combo").AddItem(new MenuItem("UseQCombo", "使用 Q").SetValue(true));
-            _config.SubMenu("Combo").AddItem(new MenuItem("UseWCombo", "使用 W").SetValue(true));
-            _config.SubMenu("Combo").AddItem(new MenuItem("UseECombo", "使用 E").SetValue(true));
-            _config.SubMenu("Combo").AddItem(new MenuItem("UseRCombo", "使用 R").SetValue(true));
-            _config.SubMenu("Combo").AddItem(new MenuItem("UseICombo", "使用 物品").SetValue(true));
-            _config.SubMenu("Combo").AddItem(new MenuItem("Killsteal", "击杀").SetValue(true));
-            _config.SubMenu("Combo")
-                .AddItem(new MenuItem("ComboActive", "连招 按键!").SetValue(new KeyBind(32, KeyBindType.Press)));
+            //Load the orbwalker and add it to the submenu.
+            Orbwalker = new Orbwalking.Orbwalker(Config.SubMenu("Orbwalking"));
+            Config.AddToMainMenu();
 
-            _config.AddSubMenu(new Menu("骚扰 设置", "Harass"));
-            _config.SubMenu("Harass").AddItem(new MenuItem("UseQHarass", "使用 Q").SetValue(true));
-            _config.SubMenu("Harass")
-                .AddItem(new MenuItem("HarassActive", "骚扰 按键!").SetValue(new KeyBind(88, KeyBindType.Press)));
-            _config.SubMenu("Harass")
-                .AddItem(
-                    new MenuItem("HarassActiveT", "骚扰 (自动)!").SetValue(new KeyBind("Y".ToCharArray()[0],
-                        KeyBindType.Toggle)));
+            Config.SubMenu("R option").AddItem(new MenuItem("autoR", "自动 R").SetValue(true));
+            Config.SubMenu("R option").AddItem(new MenuItem("useR", "手动R 按键").SetValue(new KeyBind('t', KeyBindType.Press))); //32 == space
 
-            _config.AddSubMenu(new Menu("范围 设置", "Drawings"));
-            _config.SubMenu("Drawings")
-                .AddItem(
-                    new MenuItem("QRange", "Q 范围").SetValue(new Circle(true, Color.FromArgb(255, 255, 255, 255))));
-            _config.SubMenu("Drawings")
-                .AddItem(
-                    new MenuItem("ERange", "E 范围").SetValue(new Circle(false, Color.FromArgb(255, 255, 255, 255))));
-            _config.SubMenu("Drawings")
-                .AddItem(
-                    new MenuItem("RRange", "R 范围").SetValue(new Circle(false, Color.FromArgb(255, 255, 255, 255))));
-            _config.AddToMainMenu();
-            Game.PrintChat("<font color=\"#00BFFF\">鑺遍倞灏忓眿鍑哄搧 </font> One Key To Win - Darius <font color=\"#FFFFFF\">鍔犺級 鎴愬姛!</font>");
+            Config.SubMenu("Draw").AddItem(new MenuItem("noti", "显示 通知").SetValue(false));
+            Config.SubMenu("Draw").AddItem(new MenuItem("qRange", "Q 范围").SetValue(false));
+            Config.SubMenu("Draw").AddItem(new MenuItem("eRange", "E 范围").SetValue(false));
+            Config.SubMenu("Draw").AddItem(new MenuItem("rRange", "R 范围").SetValue(false));
+            Config.SubMenu("Draw").AddItem(new MenuItem("onlyRdy", "显示R可击杀目标").SetValue(true));
+            
+            Config.AddItem(new MenuItem("inter", "自动 E拉人")).SetValue(true);
+            Config.AddItem(new MenuItem("farmQ", "Q 补刀").SetValue(true));
+            Config.AddItem(new MenuItem("haras", "Q 骚扰").SetValue(true));
+            Config.AddItem(new MenuItem("debug", "调试 模式").SetValue(false));
+
             Drawing.OnDraw += Drawing_OnDraw;
             Game.OnGameUpdate += Game_OnGameUpdate;
-            Orbwalking.AfterAttack += afterAttack;
+            Interrupter.OnPossibleToInterrupt += OnInterruptableSpell;
+            Orbwalking.BeforeAttack += BeforeAttack;
+            Game.PrintChat("<font color=\"#008aff\">D</font>arius full automatic AI ver 1.0 <font color=\"#000000\">by sebastiank1</font> - <font color=\"#00BFFF\">Loaded</font>");
         }
-
-        private static void afterAttack(AttackableUnit unit, AttackableUnit target)
+        private static void OnInterruptableSpell(Obj_AI_Base unit, InterruptableSpell spell)
         {
-            if (_config.Item("ComboActive").GetValue<KeyBind>().Active && _config.Item("UseWCombo").GetValue<bool>() &&
-                unit.IsMe && (target is Obj_AI_Hero))
-                W.Cast();  
+            if (Config.Item("inter").GetValue<bool>() && E.IsReady() && unit.IsValidTarget(E.Range))
+                E.Cast(unit);
+        }
+        static void BeforeAttack(Orbwalking.BeforeAttackEventArgs args)
+        {
+             if (args.Target.IsValid<Obj_AI_Hero>() && W.IsReady()  && ObjectManager.Player.Mana > RMANA + WMANA)
+                    W.Cast();
         }
 
         private static void Drawing_OnDraw(EventArgs args)
         {
-            if (SpellList == null) return;
-
-            foreach (var spell in SpellList)
+            if (Config.Item("qRange").GetValue<bool>())
             {
-                var menuItem = _config.Item(spell.Slot + "Range").GetValue<Circle>();
+                if (Config.Item("onlyRdy").GetValue<bool>() && Q.IsReady())
+                    if (Q.IsReady())
+                        Render.Circle.DrawCircle(ObjectManager.Player.Position, Q.Range, System.Drawing.Color.Cyan);
+                    else
+                        Render.Circle.DrawCircle(ObjectManager.Player.Position, Q.Range, System.Drawing.Color.Cyan);
+            }
+            if (Config.Item("rRange").GetValue<bool>())
+            {
+                if (Config.Item("onlyRdy").GetValue<bool>() && R.IsReady())
+                    if (R.IsReady())
+                        Render.Circle.DrawCircle(ObjectManager.Player.Position, R.Range, System.Drawing.Color.Red);
+                    else
+                        Render.Circle.DrawCircle(ObjectManager.Player.Position, R.Range, System.Drawing.Color.Red);
+            }
+            if (Config.Item("eRange").GetValue<bool>())
+            {
+                if (Config.Item("onlyRdy").GetValue<bool>() && E.IsReady())
+                    if (Q.IsReady())
+                        Render.Circle.DrawCircle(ObjectManager.Player.Position, E.Range, System.Drawing.Color.Yellow);
+                    else
+                        Render.Circle.DrawCircle(ObjectManager.Player.Position, E.Range, System.Drawing.Color.Yellow);
+            }
+            if (Config.Item("noti").GetValue<bool>())
+            {
 
-                if (menuItem.Active)
-                    Utility.DrawCircle(ObjectManager.Player.Position, spell.Range, menuItem.Color);
+                var tw = TargetSelector.GetTarget(1000, TargetSelector.DamageType.Physical);
+                if (tw.IsValidTarget())
+                {
+
+                    if (Q.GetDamage(tw) > tw.Health)
+                    {
+                        Render.Circle.DrawCircle(tw.ServerPosition, 200, System.Drawing.Color.Red);
+                        Drawing.DrawText(Drawing.Width * 0.1f, Drawing.Height * 0.4f, System.Drawing.Color.Red, "Q kill: " + tw.ChampionName + " have: " + tw.Health + "hp");
+                    }
+                    else if (Q.GetDamage(tw) + W.GetDamage(tw) > tw.Health)
+                    {
+                        Render.Circle.DrawCircle(tw.ServerPosition, 200, System.Drawing.Color.Red);
+                        Drawing.DrawText(Drawing.Width * 0.1f, Drawing.Height * 0.4f, System.Drawing.Color.Red, "Q + W kill: " + tw.ChampionName + " have: " + tw.Health + "hp");
+                    }
+                    else if (Q.GetDamage(tw) + W.GetDamage(tw) + R.GetDamage(tw) > tw.Health)
+                    {
+                        Render.Circle.DrawCircle(tw.ServerPosition, 200, System.Drawing.Color.Red);
+                        Drawing.DrawText(Drawing.Width * 0.1f, Drawing.Height * 0.4f, System.Drawing.Color.Red, "Q + W + R kill: " + tw.ChampionName + " have: " + tw.Health + "hp");
+                    }
+                }
             }
         }
 
         private static void Game_OnGameUpdate(EventArgs args)
         {
-
-            if (R.IsReady() && _config.Item("UseRCombo").GetValue<bool>())
+            if (Orbwalker.ActiveMode == Orbwalking.OrbwalkingMode.Mixed || Orbwalker.ActiveMode == Orbwalking.OrbwalkingMode.LaneClear || Orbwalker.ActiveMode == Orbwalking.OrbwalkingMode.LastHit)
+                Farm = true;
+            else
+                Farm = false;
+            ManaMenager();
+            if (R.IsReady() && Config.Item("autoR").GetValue<bool>())
             {
                 CastR();
             }
-            var targetRanduin = TargetSelector.GetTarget(Randuin.Range, TargetSelector.DamageType.Physical); 
-            if (targetRanduin.IsValidTarget() && targetRanduin.Path[0].Distance(ObjectManager.Player.ServerPosition) > ObjectManager.Player.Distance(targetRanduin.ServerPosition) && ObjectManager.Player.Distance(targetRanduin.ServerPosition) > 220)
+            if (R.IsReady() && Config.Item("useR").GetValue<KeyBind>().Active)
             {
-                Items.UseItem(3143);
+                var targetR = TargetSelector.GetTarget(R.Range, TargetSelector.DamageType.Physical);
+                if (targetR.IsValidTarget())
+                    R.Cast(targetR, true);
             }
 
-            if (E.IsReady() && ObjectManager.Player.Mana > RMANA + EMANA && Orbwalker.ActiveMode.ToString() == "Combo")
+            
+            ManaMenager();
+            if (Q.IsReady() && ObjectManager.Player.CountEnemiesInRange(Q.Range) > 0)
             {
-                var target =  TargetSelector.GetTarget(E.Range, TargetSelector.DamageType.Physical); 
+                if (ObjectManager.Player.Mana > RMANA + QMANA && Orbwalker.ActiveMode == Orbwalking.OrbwalkingMode.Combo)
+                    Q.Cast();
+                else if (ObjectManager.Player.Mana > RMANA + QMANA + EMANA + WMANA && Farm && Config.Item("haras").GetValue<bool>())
+                    Q.Cast();
+                if (!R.IsReady())
+                {
+                    var target = TargetSelector.GetTarget(Q.Range, TargetSelector.DamageType.Physical);
+                    if (target.IsValidTarget() && ObjectManager.Player.Distance(target.Position) < Q.Range && Q.GetDamage(target) > target.Health)
+                        Q.Cast();
+                }
+            }
+            if (E.IsReady() && ObjectManager.Player.Mana > RMANA + EMANA && Orbwalker.ActiveMode == Orbwalking.OrbwalkingMode.Combo)
+            {
+                var target = TargetSelector.GetTarget(E.Range, TargetSelector.DamageType.Physical);
                 if (target.IsValidTarget())
                 {
-                    if ( target.Path.Count() > 0 && target.Path[0].Distance(ObjectManager.Player.ServerPosition) > ObjectManager.Player.Distance(target.ServerPosition) && ObjectManager.Player.Distance(target) > 220)
+                    if ((target.Path.Count() > 0 || (ObjectManager.Player.Distance(target.ServerPosition) > 460 && target.Path.Count() == 0)) && ObjectManager.Player.Distance(target.ServerPosition) >= ObjectManager.Player.Distance(target.Position) && ObjectManager.Player.Distance(target.ServerPosition) > 260)
                         E.Cast(target, true, true);
                 }
             }
-            if (CountEnemies(ObjectManager.Player, 385) > 0)
-            {
-                Items.UseItem(Items.HasItem(3077) ? 3077 : 3074);
-            }
-            if (Q.IsReady() && CountEnemies(ObjectManager.Player, Q.Range) > 0 && ObjectManager.Player.Mana > RMANA + QMANA && Orbwalker.ActiveMode.ToString() == "Combo")
-                Q.Cast();
-
-
-            if ((_config.Item("HarassActive").GetValue<KeyBind>().Active) ||
-                (_config.Item("HarassActiveT").GetValue<KeyBind>().Active))
-                ExecuteHarass();
-            if (Q.IsReady() && ObjectManager.Player.Mana > RMANA + QMANA + RMANA + WMANA && Orbwalker.ActiveMode.ToString() == "LaneClear")
+            if (Config.Item("farmQ").GetValue<bool>() && Q.IsReady() && ObjectManager.Player.Mana > RMANA + QMANA + EMANA + WMANA && Orbwalker.ActiveMode == Orbwalking.OrbwalkingMode.LaneClear)
             {
                 var allMinionsQ = MinionManager.GetMinions(ObjectManager.Player.ServerPosition, Q.Range,
                    MinionTypes.All);
@@ -155,15 +193,17 @@ namespace Darius
                     if (ObjectManager.Player.Distance(minion.ServerPosition) > 300 && minion.Health <  ObjectManager.Player.GetSpellDamage(minion, SpellSlot.Q) * 0.6)
                         Q.Cast();
             }
+           
         }
 
         private static void CastR()
         {
-            foreach (var target in ObjectManager.Get<Obj_AI_Hero>().Where(target => target.IsValidTarget(R.Range)))
+            foreach (var target in ObjectManager.Get<Obj_AI_Hero>().Where(target => target.IsValidTarget(R.Range) && !target.IsZombie && !target.HasBuffOfType(BuffType.SpellImmunity) && !target.HasBuffOfType(BuffType.SpellShield) && !target.HasBuffOfType(BuffType.PhysicalImmunity)))
             {
-                if (ObjectManager.Player.GetSpellDamage(target, SpellSlot.R, 1) - 5 > target.Health)
+                if (R.GetDamage(target) - target.Level > target.Health)
                 {
-                    R.CastOnUnit(target, true);
+                    R.Cast(target, true);
+                    
                 }
                 else
                 {
@@ -171,12 +211,13 @@ namespace Darius
                     {
                         if (buff.Name == "dariushemo")
                         {
-                            if (ObjectManager.Player.GetSpellDamage(target, SpellSlot.R, 1) * (1 + buff.Count / 5) - 1 > target.Health)
+                            if (R.GetDamage(target) * (1 + (float)buff.Count / 5) - 1 > target.Health)
                             {
                                 R.CastOnUnit(target, true);
                             }
                             else if (ObjectManager.Player.Health < ObjectManager.Player.MaxHealth * 0.4 && ObjectManager.Player.GetSpellDamage(target, SpellSlot.R, 1) * 1.2 * ((1 + buff.Count / 5) - 1) > target.Health)
                             {
+
                                 R.CastOnUnit(target, true);
                             }
                             
@@ -187,36 +228,24 @@ namespace Darius
             
         }
 
-        private static void ExecuteHarass()
-        {
-            if (!_config.Item("UseQHarass").GetValue<bool>() || !Q.IsReady() || ObjectManager.Player.Mana < RMANA + WMANA + EMANA + QMANA) return;
-
-            var c =
-                (from hero in ObjectManager.Get<Obj_AI_Hero>()
-                    where hero.IsValidTarget()
-                    select ObjectManager.Player.Distance(hero)).Count(dist => dist > 270 && dist <= Q.Range);
-
-            if (c > 0)
-                Q.Cast();
-        }
         public static void ManaMenager()
         {
-            QMANA = 40;
-            WMANA = 25 + 5 * W.Level;
-            EMANA = 45;
+            QMANA = Q.Instance.ManaCost;
+            WMANA = W.Instance.ManaCost;
+            EMANA = E.Instance.ManaCost;
             if (!R.IsReady())
-                RMANA = 25;
+                RMANA = QMANA - 10;
             else
-                RMANA = 100;
+                RMANA = R.Instance.ManaCost + (R.Instance.ManaCost * ObjectManager.Player.CountEnemiesInRange(R.Range));
+
+            if (ObjectManager.Player.Health < ObjectManager.Player.MaxHealth * 0.2)
+            {
+                QMANA = 0;
+                WMANA = 0;
+                EMANA = 0;
+                RMANA = 0;
+            }
         }
-        private static int CountEnemies(Obj_AI_Base target, float range)
-        {
-            return
-                ObjectManager.Get<Obj_AI_Hero>()
-                    .Count(
-                        hero =>
-                            hero.IsValidTarget() && hero.Team != ObjectManager.Player.Team &&
-                            hero.ServerPosition.Distance(target.ServerPosition) <= range);
-        }
+       
     }
 }

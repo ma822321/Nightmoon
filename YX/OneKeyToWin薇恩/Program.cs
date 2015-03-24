@@ -61,7 +61,7 @@ namespace Vayne_OneKeyToWin
             SpellList.Add(R);
 
             //Create the menu
-            Config = new Menu("花边汉化-OneKeyVN", ChampionName, true);
+            Config = new Menu("花边-OneKeyVN", ChampionName, true);
 
             var targetSelectorMenu = new Menu("目标 选择", "Target Selector");
             TargetSelector.AddToMenu(targetSelectorMenu);
@@ -89,7 +89,7 @@ namespace Vayne_OneKeyToWin
             Orbwalking.AfterAttack += afterAttack;
             AntiGapcloser.OnEnemyGapcloser += AntiGapcloser_OnEnemyGapcloser;
             Obj_AI_Base.OnProcessSpellCast += Obj_AI_Base_OnProcessSpellCast;
-            Game.PrintChat("<font color=\"#00BFFF\">鑺遍倞灏忓眿鍑哄搧 </font> One Key To Win - Vayne V1.0 <font color=\"#FFFFFF\">鍔犺級 鎴愬姛!</font>");
+            Game.PrintChat("<font color=\"#7e62cc\">V</font>aine full automatic AI ver 1.0 <font color=\"#000000\">by sebastiank1</font> - <font color=\"#00BFFF\">Loaded</font>");
         }
 
         private static void Game_OnGameUpdate(EventArgs args)

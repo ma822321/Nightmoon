@@ -28,6 +28,8 @@ namespace Sivir
         public static float QMANA;
         public static float WMANA;
         public static float RMANA;
+
+        public static float qRange = 1240;
         //AutoPotion
         public static Items.Item Potion = new Items.Item(2003, 0);
         public static Items.Item ManaPotion = new Items.Item(2004, 0);
@@ -63,35 +65,38 @@ namespace Sivir
             SpellList.Add(R);
 
             //Create the menu
-            Config = new Menu("花边汉化-一键轮子妈", ChampionName, true);
+            Config = new Menu("花边-一键轮子妈", ChampionName, true);
 
             var targetSelectorMenu = new Menu("目标 选择", "Target Selector");
             TargetSelector.AddToMenu(targetSelectorMenu);
             Config.AddSubMenu(targetSelectorMenu);
 
             //Orbwalker submenu
-            Config.AddSubMenu(new Menu("走 砍", "Orbwalking"));
+            Config.AddSubMenu(new Menu("走砍 设置", "Orbwalking"));
 
             //Load the orbwalker and add it to the submenu.
             Orbwalker = new Orbwalking.Orbwalker(Config.SubMenu("Orbwalking"));
             Config.AddToMainMenu();
 
             Config.AddItem(new MenuItem("farmW", "W 打钱").SetValue(true));
-            Config.AddItem(new MenuItem("Hit", "高命中率 Q").SetValue(new Slider(2, 3, 0)));
-            Config.AddItem(new MenuItem("autoR", "自动 R").SetValue(true));
+            Config.AddItem(new MenuItem("Hit", "Q 命中").SetValue(new Slider(3, 3, 0)));
+            foreach (var enemy in ObjectManager.Get<Obj_AI_Hero>().Where(enemy => enemy.Team != Player.Team))
+                Config.SubMenu("Haras Q").AddItem(new MenuItem("haras" + enemy.BaseSkinName, "Q这个傻逼吗" + enemy.BaseSkinName).SetValue(true));
+            Config.AddItem(new MenuItem("autoR", "Auto R").SetValue(true));
             #region Shield
-            Config.SubMenu("E Shield Config").AddItem(new MenuItem("autoE", "自动 E").SetValue(true));
+                Config.SubMenu("E Shield Config").AddItem(new MenuItem("autoE", "自动 E").SetValue(true));
                 Config.SubMenu("E Shield Config").AddItem(new MenuItem("AGC", "被突进时丨自动E").SetValue(true));
-                Config.SubMenu("E Shield Config").AddItem(new MenuItem("Edmg", "E 抵挡伤害丨hp<= %").SetValue(new Slider(0, 100, 0)));
+                Config.SubMenu("E Shield Config").AddItem(new MenuItem("Edmg", "E 抵挡伤害丨hp<= %").SetValue(new Slider(0, 100, 0))); 
             #endregion
-            Config.AddItem(new MenuItem("pots", "使用 药水").SetValue(true));
+                Config.AddItem(new MenuItem("pots", "使用 药水").SetValue(true));
 
             //Add the events we are going to use:
             Game.OnGameUpdate += Game_OnGameUpdate;
             Orbwalking.AfterAttack += Orbwalker_AfterAttack;
             Obj_AI_Base.OnProcessSpellCast += Obj_AI_Base_OnProcessSpellCast;
             AntiGapcloser.OnEnemyGapcloser += AntiGapcloser_OnEnemyGapcloser;
-            Game.PrintChat("<font color=\"#00BFFF\">鑺遍倞灏忓眿鍑哄搧 </font> One Key To Win - Sivir V1.6 <font color=\"#FFFFFF\">鍔犺級 鎴愬姛!</font>");
+            Game.PrintChat("<font color=\"#9c3232\">S</font>ivir full automatic AI ver 1.9 <font color=\"#000000\">by sebastiank1</font> - <font color=\"#00BFFF\">Loaded</font>");
+
         }
 
         public static void Obj_AI_Base_OnProcessSpellCast(Obj_AI_Base sender, GameObjectProcessSpellCastEventArgs args)
@@ -163,12 +168,12 @@ namespace Sivir
                     if (qDmg  > t.Health)
                         Q.Cast(t, true);
                     else if (Orbwalker.ActiveMode.ToString() == "Combo" && ObjectManager.Player.Mana > RMANA + QMANA)
-                        castQ(t);
-                    else if (((Orbwalker.ActiveMode.ToString() == "Mixed" || Orbwalker.ActiveMode.ToString() == "LaneClear")))
+                        CastSpell(Q, t, Config.Item("Hit").GetValue<Slider>().Value);
+                    else if (((Orbwalker.ActiveMode.ToString() == "Mixed" || Orbwalker.ActiveMode.ToString() == "LaneClear")) && Config.Item("haras" + t.BaseSkinName).GetValue<bool>())
                         if (ObjectManager.Player.Mana > RMANA + WMANA + QMANA + QMANA && t.Path.Count() > 1)
-                            Qc.CastIfHitchanceEquals(t, HitChance.VeryHigh, true);
+                            CastSpell(Q, t, Config.Item("Hit").GetValue<Slider>().Value);
                         else if (ObjectManager.Player.Mana > ObjectManager.Player.MaxMana * 0.9 )
-                            castQ(t);
+                            CastSpell(Q, t, Config.Item("Hit").GetValue<Slider>().Value);
                         else if (ObjectManager.Player.Mana > RMANA + WMANA + QMANA + QMANA)
                             Q.CastIfWillHit(t, 2, true);
                     if (ObjectManager.Player.Mana > RMANA + QMANA + WMANA && Q.IsReady())
@@ -194,17 +199,83 @@ namespace Sivir
                     R.Cast();
             }
         }
+        private static void CastSpell(Spell QWER, Obj_AI_Hero target, int HitChanceNum)
+        {
+            //HitChance 0 - 3
+            // example CastSpell(Q, target, 3);
+            if (HitChanceNum == 0)
+                QWER.Cast(target, true);
+            else if (HitChanceNum == 1)
+                QWER.CastIfHitchanceEquals(target, HitChance.VeryHigh, true);
+            else if (HitChanceNum == 2)
+            {
+                if (QWER.Delay < 0.3)
+                    QWER.CastIfHitchanceEquals(target, HitChance.Dashing, true);
+                QWER.CastIfHitchanceEquals(target, HitChance.Immobile, true);
+                QWER.CastIfWillHit(target, 2, true);
+                if (target.Path.Count() < 2)
+                    QWER.CastIfHitchanceEquals(target, HitChance.VeryHigh, true);
+            }
+            else if (HitChanceNum == 3)
+            {
+                if (QWER.Delay < 0.3)
+                    QWER.CastIfHitchanceEquals(target, HitChance.Dashing, true);
+                QWER.CastIfHitchanceEquals(target, HitChance.Immobile, true);
+                QWER.CastIfWillHit(target, 2, true);
 
+                List<Vector2> waypoints = target.GetWaypoints();
+                float SiteToSite = ((target.MoveSpeed * QWER.Delay) + (Player.Distance(target.ServerPosition) / QWER.Speed)) * 6 - QWER.Width;
+                float BackToFront = ((target.MoveSpeed * QWER.Delay) + (Player.Distance(target.ServerPosition) / QWER.Speed)) * 2;
+                if (ObjectManager.Player.Distance(waypoints.Last<Vector2>().To3D()) < SiteToSite || ObjectManager.Player.Distance(target.Position) < SiteToSite)
+                {
+
+                    if (ObjectManager.Player.Distance(waypoints.Last<Vector2>().To3D()) <= ObjectManager.Player.Distance(target.Position))
+                    {
+                        if (ObjectManager.Player.Distance(target.ServerPosition) < QWER.Range - ((target.MoveSpeed * QWER.Delay) + (Player.Distance(target.ServerPosition) / QWER.Speed)))
+                            QWER.CastIfHitchanceEquals(target, HitChance.High, true);
+                    }
+                    else
+                    {
+                        QWER.CastIfHitchanceEquals(target, HitChance.High, true);
+                    }
+                }
+                else if (target.Path.Count() < 2
+                    && (target.ServerPosition.Distance(waypoints.Last<Vector2>().To3D()) > SiteToSite
+                    || Math.Abs(ObjectManager.Player.Distance(waypoints.Last<Vector2>().To3D()) - ObjectManager.Player.Distance(target.Position)) > BackToFront
+                    || target.Position == target.ServerPosition))
+                {
+
+                    if (ObjectManager.Player.Distance(waypoints.Last<Vector2>().To3D()) <= ObjectManager.Player.Distance(target.Position))
+                    {
+                        if (ObjectManager.Player.Distance(target.ServerPosition) < QWER.Range - ((target.MoveSpeed * QWER.Delay) + (Player.Distance(target.ServerPosition) / QWER.Speed)))
+                            QWER.CastIfHitchanceEquals(target, HitChance.High, true);
+                    }
+                    else
+                    {
+                        QWER.CastIfHitchanceEquals(target, HitChance.High, true);
+                    }
+                }
+            }
+        }
         private static void castQ(Obj_AI_Hero target)
         {
+            List<Vector2> waypoints = target.GetWaypoints();
             if (Config.Item("Hit").GetValue<Slider>().Value == 0)
                 Q.Cast(target, true);
             else if (Config.Item("Hit").GetValue<Slider>().Value == 1)
                 Q.CastIfHitchanceEquals(target, HitChance.VeryHigh, true);
             else if (Config.Item("Hit").GetValue<Slider>().Value == 2 && target.Path.Count() < 2)
                 Q.CastIfHitchanceEquals(target, HitChance.VeryHigh, true);
-            else if (Config.Item("Hit").GetValue<Slider>().Value == 3 && target.Path.Count() < 2 && Math.Abs(ObjectManager.Player.Distance(target.ServerPosition) - ObjectManager.Player.Distance(target.Position)) > 25)
-                Q.CastIfHitchanceEquals(target, HitChance.VeryHigh, true);
+            else if (Config.Item("Hit").GetValue<Slider>().Value == 3 && target.Path.Count() < 2 && (target.ServerPosition.Distance(waypoints.Last<Vector2>().To3D()) > 500 || Math.Abs((ObjectManager.Player.Distance(waypoints.Last<Vector2>().To3D()) - ObjectManager.Player.Distance(target.Position))) > 400 || target.Path.Count() == 0))
+            {
+
+                if (ObjectManager.Player.Distance(target.ServerPosition) < ObjectManager.Player.Distance(target.Position))
+                    Q.Range = qRange - (target.MoveSpeed * Q.Delay);
+                else
+                    Q.Range = qRange;
+                Q.CastIfHitchanceEquals(target, HitChance.High, true);
+                Q.Range = qRange;
+            }
         }
 
         public static bool farmW()
