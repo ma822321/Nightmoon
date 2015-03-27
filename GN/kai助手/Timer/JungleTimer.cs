@@ -22,7 +22,7 @@ namespace KaiHelper.Timer
             _menuJungle = config.AddSubMenu(new Menu("打野计时", "JungleTimer"));
             _menuJungle.AddItem(
                 new MenuItem("JungleTimerFormat", "时间格式:").SetValue(new StringList(new[] { "分:秒", "秒" })));
-            _menuJungle.AddItem(new MenuItem("JungleActive", "开启!").SetValue(true));
+            _menuJungle.AddItem(new MenuItem("JungleActive", "开启").SetValue(true));
             _jungleCamps.Add(
                 new JungleCamp(
                     "SRU_Blue", 300, new Vector3(3871.489f, 7901.054f, 51.90324f),
@@ -92,11 +92,11 @@ namespace KaiHelper.Timer
             //GameObject.OnCreate += GameObject_OnCreate;
         }
 
-        void GameObject_OnCreate(GameObject sender, EventArgs args)
-        {
-            if (sender.Position.Distance(ObjectManager.Player.Position) < 800)
-                Game.PrintChat(sender.Name);
-        }
+        //void GameObject_OnCreate(GameObject sender, EventArgs args)
+        //{
+        //    if (sender.Position.Distance(ObjectManager.Player.Position) < 800)
+        //        Game.PrintChat(sender.Name);
+        //}
 
         private void Drawing_OnEndScene(EventArgs args)
         {

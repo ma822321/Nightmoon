@@ -9,10 +9,10 @@ namespace KaiHelper.Tracker
 {
     public class Time
     {
-        public bool CalledInvisible = false;
-        public bool CalledVisible = false;
+        public bool CalledInvisible;
+        public bool CalledVisible;
         public int InvisibleTime;
-        public bool Pinged = false;
+        public bool Pinged;
         public int StartInvisibleTime;
         public int StartVisibleTime;
         public int VisibleTime;
@@ -25,12 +25,12 @@ namespace KaiHelper.Tracker
 
         public GankDetector(Menu config)
         {
-            _menuGank = config.AddSubMenu(new Menu("Gank提示", "GDetect"));
+            _menuGank = config.AddSubMenu(new Menu("Gank 提示", "GDetect"));
             _menuGank.AddItem(new MenuItem("InvisibleTime", "离开视野时间").SetValue(new Slider(5, 1, 10)));
             _menuGank.AddItem(new MenuItem("VisibleTime", "进入视野时间").SetValue(new Slider(3, 1, 5)));
             _menuGank.AddItem(new MenuItem("TriggerRange", "触发范围").SetValue(new Slider(3000, 1, 3000)));
-            _menuGank.AddItem(new MenuItem("CircalRange", "追踪范围").SetValue(new Slider(2500, 1, 3000)));
-            _menuGank.AddItem(new MenuItem("GankType", "模式").SetValue(new StringList(new []{"线条","线圈","两者"})));
+            _menuGank.AddItem(new MenuItem("CircalRange", "线圈范围").SetValue(new Slider(2500, 1, 3000)));
+            _menuGank.AddItem(new MenuItem("GankType", "类型").SetValue(new StringList(new[] { "线条", "线圈", "两者" })));
             _menuGank.AddItem(new MenuItem("Ping", "聊天框提醒").SetValue(true));
             _menuGank.AddItem(new MenuItem("GankActive", "启用").SetValue(true));
             CustomEvents.Game.OnGameLoad += (args =>

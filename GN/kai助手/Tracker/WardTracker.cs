@@ -17,7 +17,8 @@ namespace KaiHelper.Tracker
         Pink,
         Trap,
     }
-    internal class Ward
+
+    public class Ward
     {
         private Render.Circle _circle;
         private Render.Sprite _minimapSprite;
@@ -193,11 +194,11 @@ namespace KaiHelper.Tracker
 
     public class WardDetector
     {
-        private readonly List<Ward> _detectedWards = new List<Ward>();
+        public readonly List<Ward> DetectedWards = new List<Ward>();
         public static Menu MenuWard;
         public WardDetector(Menu config)
         {
-            MenuWard = config.AddSubMenu(new Menu("眼位监控","WardTracker"));
+            MenuWard = config.AddSubMenu(new Menu("眼位监控", "WardTracker"));
             MenuWard.AddItem(new MenuItem("WardScale", "大小 (F5刷新)")).SetValue(new Slider(70));
             MenuWard.AddItem(new MenuItem("WardActive", "启用")).SetValue(true);
             foreach (GameObject obj in ObjectManager.Get<GameObject>().Where(o => o is Obj_AI_Base))
@@ -225,7 +226,7 @@ namespace KaiHelper.Tracker
                 return;
             }
             int startTime = Environment.TickCount - (int)((wardObject.MaxMana - wardObject.Mana) * 1000);
-            _detectedWards.Add(new Ward(wardObject.SkinName, startTime, wardObject));
+            DetectedWards.Add(new Ward(wardObject.SkinName, startTime, wardObject));
         }
 
         private void Game_OnGameUpdate(EventArgs args)
@@ -234,7 +235,7 @@ namespace KaiHelper.Tracker
             {
                 return;
             }
-            _detectedWards.RemoveAll(w => w.WardObject.IsDead && w.RemoveCircle());
+            DetectedWards.RemoveAll(w => w.WardObject.IsDead && w.RemoveCircle());
         }
     }
 }

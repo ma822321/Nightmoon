@@ -20,7 +20,7 @@ namespace KaiHelper
             new SkillBar(MainMenu);
             new JungleTimer(MainMenu);
             new GankDetector(MainMenu);
-            new LastPosition(MainMenu);
+            //new LastPosition(MainMenu);
             new WayPoint(MainMenu);
             new WardDetector(MainMenu);
             new HealthTurret(MainMenu);
@@ -36,19 +36,13 @@ namespace KaiHelper
         private static void Game_OnGameLoad(EventArgs args)
         {
             bool hasUpdate = Helper.HasNewVersion(Assembly.GetExecutingAssembly().GetName().Name);
-            Game.PrintChat(
-                "-------------------------------------------------------------------------------------------");
             if (hasUpdate)
             {
                 Game.PrintChat(
-                    "<font color = \"#ff002b\">A new version of KaiHelper is available. Please check for updates!</font>");
+                    "<font color = \"#ff002b\">鎵綡uaBian绱㈠彇鏈€鏂扮増鐨凨ai鍔╂墜婕㈠寲鐗堟湰锛佹鐗堟湰宸查亷鏈燂紒</font>");
             }
-            Game.PrintChat("<font color = \"#00FF2B\">KaiHelper</font> by <font color = \"#FD00FF\">kaigan</font>");
-            Game.PrintChat(
-                "<font color = \"#0092FF\">Feel free to donate via Paypal to:</font> <font color = \"#F0FF00\">ntanphat2406@gmail.com</font>");
-            Game.PrintChat("KaiHelper - Loaded!");
-            Game.PrintChat(
-                "-------------------------------------------------------------------------------------------");
+            Game.PrintChat("<font color = \"#00FF2B\">HuaBian婕㈠寲 Kai鍔╂墜</font> - <font color = \"#FD00FF\">鍔犺級鎴愬姛</font>");
+            Game.PrintChat("<font color = \"#0092FF\">Feel free to donate via Paypal to:</font> <font color = \"#F0FF00\">ntanphat2406@gmail.com</font>");
         }
     }
 }
