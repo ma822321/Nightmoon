@@ -29,13 +29,11 @@ namespace BrianSharp
             Player = ObjectManager.Player;
             PlayerName = Player.ChampionName;
             Game.PrintChat("<font color = \'{0}'>Brian Sharp</font>", HTMLColor.Lime);
-            MainMenu = new Menu("【無爲汉化】Brian合集", "BrianSharp", true);
+            MainMenu = new Menu("花边-Brian合集", "BrianSharp", true);
             var InfoMenu = new Menu("信息", "Info");
             {
                 InfoMenu.AddItem(new MenuItem("Author", "作者: Brian"));
-                InfoMenu.AddItem(new MenuItem("Paypal", "捐赠: dcbrian01@gmail.com"));
-				InfoMenu.AddItem(new MenuItem("by", "汉化: 無爲"));
-				InfoMenu.AddItem(new MenuItem("qun", "汉化群: 386289593"));
+                InfoMenu.AddItem(new MenuItem("Paypal", "捐赠pay: dcbrian01@gmail.com"));
                 MainMenu.AddSubMenu(InfoMenu);
             }
             TargetSelector.AddToMenu(MainMenu.AddSubMenu(new Menu("目标选择", "TS")));
