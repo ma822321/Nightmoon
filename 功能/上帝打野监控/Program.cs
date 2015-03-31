@@ -745,7 +745,7 @@ namespace GodJungleTracker
         static void LoadMenu()
         {
             //Start Menu
-            menu = new Menu("花边-上单打野监控", "God Jungle Tracker", true);
+            menu = new Menu("花边-上帝打野监控", "God Jungle Tracker", true);
 
             //Camp to Track Menu
             menu.AddSubMenu(new Menu("野怪监测", "Camp to Track"));
