@@ -93,28 +93,28 @@ namespace Ezreal
             Config.AddToMainMenu();
 
 
-            Config.SubMenu("Iteams").AddItem(new MenuItem("mura", "自动 魔切").SetValue(true));
-            Config.SubMenu("Iteams").AddItem(new MenuItem("stack", "假如蓝量充足丨自动堆叠魔切Or女神").SetValue(false));
-            Config.SubMenu("Iteams").AddItem(new MenuItem("pots", "使用 药水").SetValue(true));
+            Config.SubMenu("物品").AddItem(new MenuItem("mura", "自动 魔切").SetValue(true));
+            Config.SubMenu("物品").AddItem(new MenuItem("stack", "假如蓝量充足丨自动堆叠魔切Or女神").SetValue(false));
+            Config.SubMenu("物品").AddItem(new MenuItem("pots", "使用 药水").SetValue(true));
 
-            Config.SubMenu("E config").AddItem(new MenuItem("AGC", "被突进自动E").SetValue(true));
-            Config.SubMenu("E config").AddItem(new MenuItem("smartE", "智能 E 按键").SetValue(new KeyBind('t', KeyBindType.Press))); //32 == space
-            Config.SubMenu("E config").AddItem(new MenuItem("autoE", "自动 E").SetValue(true));
+            Config.SubMenu("E 设置").AddItem(new MenuItem("AGC", "被突进自动E").SetValue(true));
+            Config.SubMenu("E 设置").AddItem(new MenuItem("smartE", "智能 E 按键").SetValue(new KeyBind('t', KeyBindType.Press))); //32 == space
+            Config.SubMenu("E 设置").AddItem(new MenuItem("autoE", "自动 E").SetValue(true));
 
-            Config.SubMenu("R option").AddItem(new MenuItem("autoR", "自动 R").SetValue(true));
-            Config.SubMenu("R option").AddItem(new MenuItem("Rcc", "R 状态").SetValue(true));
-            Config.SubMenu("R option").AddItem(new MenuItem("Raoe", "R 伤害").SetValue(true));
-            Config.SubMenu("R option").AddItem(new MenuItem("hitchanceR", "非常高命中率R").SetValue(true));
-            Config.SubMenu("R option").AddItem(new MenuItem("useR", "手动 R 按键").SetValue(new KeyBind('t', KeyBindType.Press))); //32 == space
+            Config.SubMenu("R 设置").AddItem(new MenuItem("autoR", "自动 R").SetValue(true));
+            Config.SubMenu("R 设置").AddItem(new MenuItem("Rcc", "R 状态").SetValue(true));
+            Config.SubMenu("R 设置").AddItem(new MenuItem("Raoe", "R 伤害").SetValue(true));
+            Config.SubMenu("R 设置").AddItem(new MenuItem("hitchanceR", "非常高命中率R").SetValue(true));
+            Config.SubMenu("R 设置").AddItem(new MenuItem("useR", "手动 R 按键").SetValue(new KeyBind('t', KeyBindType.Press))); //32 == space
 
-            Config.SubMenu("Draw").AddItem(new MenuItem("noti", "显示 通知").SetValue(false));
-            Config.SubMenu("Draw").AddItem(new MenuItem("qRange", "Q 范围").SetValue(false));
-            Config.SubMenu("Draw").AddItem(new MenuItem("wRange", "W 范围").SetValue(false));
-            Config.SubMenu("Draw").AddItem(new MenuItem("eRange", "E 范围").SetValue(false));
-            Config.SubMenu("Draw").AddItem(new MenuItem("onlyRdy", "显示R可击杀目标").SetValue(true));
-            Config.SubMenu("Draw").AddItem(new MenuItem("orb", "走砍 目标").SetValue(true));
-            Config.SubMenu("Draw").AddItem(new MenuItem("qTarget", "Q 目标").SetValue(true));
-            Config.SubMenu("Draw").AddItem(new MenuItem("semi", "手动 R 目标").SetValue(false));
+            Config.SubMenu("显示").AddItem(new MenuItem("noti", "显示 通知").SetValue(false));
+            Config.SubMenu("显示").AddItem(new MenuItem("qRange", "Q 范围").SetValue(false));
+            Config.SubMenu("显示").AddItem(new MenuItem("wRange", "W 范围").SetValue(false));
+            Config.SubMenu("显示").AddItem(new MenuItem("eRange", "E 范围").SetValue(false));
+            Config.SubMenu("显示").AddItem(new MenuItem("onlyRdy", "显示R可击杀目标").SetValue(true));
+            Config.SubMenu("显示").AddItem(new MenuItem("orb", "走砍 目标").SetValue(true));
+            Config.SubMenu("显示").AddItem(new MenuItem("qTarget", "Q 目标").SetValue(true));
+            Config.SubMenu("显示").AddItem(new MenuItem("semi", "手动 R 目标").SetValue(false));
 
             Config.AddItem(new MenuItem("farmQ", "Q 补刀").SetValue(true));
             Config.AddItem(new MenuItem("haras", "打钱时骚扰敌人").SetValue(true));
