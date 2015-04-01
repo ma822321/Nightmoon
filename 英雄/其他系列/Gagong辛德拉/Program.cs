@@ -24,7 +24,7 @@ namespace GagongSyndra
         private static SoundPlayer goingsomewhereasshole = new SoundPlayer(Properties.Resources.GoingSomewhereAsshole);
         private static SoundPlayer ilovethisgame = new SoundPlayer(Properties.Resources.ILoveThisGame);
         private static int LastPlayedSound = 0;
-
+        public static Orbwalking.Orbwalker Orbwalker;
         //Collision
         private static int _wallCastT;
         private static Vector2 _yasuoWallCastedPos;
@@ -95,137 +95,139 @@ namespace GagongSyndra
             SpellList.Add(R);
             
             //Base menu
-            Menu = new Menu("花边汉化-Gagone辛德拉", "GagongSyndra", true);
-            orbwalkerMenu = new Menu("走 砍", "Orbwalker");
+            Menu = new Menu("GagongSyndra", "GagongSyndra", true);
+            orbwalkerMenu = new Menu("Orbwalker", "Orbwalker");
             //TargetSelector
-            Menu.AddSubMenu(new Menu("目标 选择", "TargetSelector"));
+            Menu.AddSubMenu(new Menu("TargetSelector", "TargetSelector"));
             TargetSelector.AddToMenu(Menu.SubMenu("TargetSelector"));
 
             //Orbwalker
-            orbwalkerMenu.AddItem(new MenuItem("Orbwalker_Mode", "定期 走砍").SetValue(false));
+            orbwalkerMenu.AddItem(new MenuItem("Orbwalker_Mode", "Orbwalker Setting").SetValue(false));
             Menu.AddSubMenu(orbwalkerMenu);
             ChooseOrbwalker(Menu.Item("Orbwalker_Mode").GetValue<bool>()); //uncomment this line
 
             //Combo
-            Menu.AddSubMenu(new Menu("连 招", "Combo"));
-            Menu.SubMenu("Combo").AddItem(new MenuItem("UseQ", "使用 Q").SetValue(true));
-            Menu.SubMenu("Combo").AddItem(new MenuItem("UseW", "使用 W").SetValue(true));
-            Menu.SubMenu("Combo").AddItem(new MenuItem("UseE", "使用 E").SetValue(true));
-            Menu.SubMenu("Combo").AddItem(new MenuItem("UseR", "使用 R").SetValue(true));
-            Menu.SubMenu("Combo").AddItem(new MenuItem("UseQE", "使用 QE").SetValue(true));
+            Menu.AddSubMenu(new Menu("Combo", "Combo"));
+            Menu.SubMenu("Combo").AddItem(new MenuItem("UseQ", "Use Q").SetValue(true));
+            Menu.SubMenu("Combo").AddItem(new MenuItem("UseW", "Use W").SetValue(true));
+            Menu.SubMenu("Combo").AddItem(new MenuItem("UseE", "Use E").SetValue(true));
+            Menu.SubMenu("Combo").AddItem(new MenuItem("UseR", "Use R").SetValue(true));
+            Menu.SubMenu("Combo").AddItem(new MenuItem("UseQE", "Use QE").SetValue(true));
             
             //Harass
-            Menu.AddSubMenu(new Menu("骚 扰", "Harass"));
-            Menu.SubMenu("Harass").AddItem(new MenuItem("UseQH", "使用 Q").SetValue(true));
-            Menu.SubMenu("Harass").AddItem(new MenuItem("HarassAAQ", "敌人在平A时丨使用Q骚扰").SetValue(false));
-            Menu.SubMenu("Harass").AddItem(new MenuItem("HarassTurret", "塔下禁止骚扰").SetValue(false));
-            Menu.SubMenu("Harass").AddItem(new MenuItem("UseWH", "使用 W").SetValue(false));
-            Menu.SubMenu("Harass").AddItem(new MenuItem("UseEH", "使用 E").SetValue(false));
-            Menu.SubMenu("Harass").AddItem(new MenuItem("UseQEH", "使用 QE").SetValue(false));
-            Menu.SubMenu("Harass").AddItem(new MenuItem("HarassMana", "蓝量 >%丨开启骚扰").SetValue(new Slider(0)));
-            Menu.SubMenu("Harass").AddItem(new MenuItem("HarassActiveT", "骚扰 (开关)!").SetValue(new KeyBind("Y".ToCharArray()[0], KeyBindType.Toggle,true)));
+            Menu.AddSubMenu(new Menu("Harass", "Harass"));
+            Menu.SubMenu("Harass").AddItem(new MenuItem("UseQH", "Use Q").SetValue(true));
+            Menu.SubMenu("Harass").AddItem(new MenuItem("HarassAAQ", "Harass with Q if enemy AA").SetValue(false));
+            Menu.SubMenu("Harass").AddItem(new MenuItem("HarassTurret", "Disable Harass if Inside Enemy Turret").SetValue(false));
+            Menu.SubMenu("Harass").AddItem(new MenuItem("UseWH", "Use W").SetValue(false));
+            Menu.SubMenu("Harass").AddItem(new MenuItem("UseEH", "Use E").SetValue(false));
+            Menu.SubMenu("Harass").AddItem(new MenuItem("UseQEH", "Use QE").SetValue(false));
+            Menu.SubMenu("Harass").AddItem(new MenuItem("HarassMana", "Only Harass if mana >").SetValue(new Slider(0)));
+            Menu.SubMenu("Harass").AddItem(new MenuItem("HarassActiveT", "Harass (toggle)!").SetValue(new KeyBind("Y".ToCharArray()[0], KeyBindType.Toggle,true)));
 
             //Farming menu:
-            Menu.AddSubMenu(new Menu("打 钱", "Farm"));
-            Menu.SubMenu("Farm").AddItem(new MenuItem("UseQFarm", "使用 Q").SetValue(new StringList(new[] { "Freeze", "LaneClear", "Both", "No" }, 2)));
-            Menu.SubMenu("Farm").AddItem(new MenuItem("UseWFarm", "使用 W").SetValue(new StringList(new[] { "Freeze", "LaneClear", "Both", "No" }, 1)));
-            Menu.SubMenu("Farm").AddItem(new MenuItem("UseEFarm", "使用 E").SetValue(new StringList(new[] { "Freeze", "LaneClear", "Both", "No" }, 3)));
+            Menu.AddSubMenu(new Menu("Farm", "Farm"));
+            Menu.SubMenu("Farm").AddItem(new MenuItem("UseQFarm", "Use Q").SetValue(new StringList(new[] { "Freeze", "LaneClear", "Both", "No" }, 2)));
+            Menu.SubMenu("Farm").AddItem(new MenuItem("UseWFarm", "Use W").SetValue(new StringList(new[] { "Freeze", "LaneClear", "Both", "No" }, 1)));
+            Menu.SubMenu("Farm").AddItem(new MenuItem("UseEFarm", "Use E").SetValue(new StringList(new[] { "Freeze", "LaneClear", "Both", "No" }, 3)));
 
             //JungleFarm menu:
-            Menu.AddSubMenu(new Menu("清 野", "JungleFarm"));
-            Menu.SubMenu("JungleFarm").AddItem(new MenuItem("UseQJFarm", "使用 Q").SetValue(true));
-            Menu.SubMenu("JungleFarm").AddItem(new MenuItem("UseWJFarm", "使用 W").SetValue(true));
-            Menu.SubMenu("JungleFarm").AddItem(new MenuItem("UseEJFarm", "使用 E").SetValue(true));
+            Menu.AddSubMenu(new Menu("JungleFarm", "JungleFarm"));
+            Menu.SubMenu("JungleFarm").AddItem(new MenuItem("UseQJFarm", "Use Q").SetValue(true));
+            Menu.SubMenu("JungleFarm").AddItem(new MenuItem("UseWJFarm", "Use W").SetValue(true));
+            Menu.SubMenu("JungleFarm").AddItem(new MenuItem("UseEJFarm", "Use E").SetValue(true));
 
             //Auto KS
-            Menu.AddSubMenu(new Menu("自动 击杀", "AutoKS"));
-            Menu.SubMenu("AutoKS").AddItem(new MenuItem("UseQKS", "使用 Q").SetValue(true));
-            Menu.SubMenu("AutoKS").AddItem(new MenuItem("UseWKS", "使用 W").SetValue(true));
-            Menu.SubMenu("AutoKS").AddItem(new MenuItem("UseEKS", "使用 E").SetValue(true));
-            Menu.SubMenu("AutoKS").AddItem(new MenuItem("UseQEKS", "使用 QE").SetValue(true));
-            Menu.SubMenu("AutoKS").AddItem(new MenuItem("UseRKS", "使用 R").SetValue(true));
-            Menu.SubMenu("AutoKS").AddItem(new MenuItem("AutoKST", "自动击杀 (开关)!").SetValue(new KeyBind("U".ToCharArray()[0], KeyBindType.Toggle,true)));
+            Menu.AddSubMenu(new Menu("Auto KS", "AutoKS"));
+            Menu.SubMenu("AutoKS").AddItem(new MenuItem("UseQKS", "Use Q").SetValue(true));
+            Menu.SubMenu("AutoKS").AddItem(new MenuItem("UseWKS", "Use W").SetValue(true));
+            Menu.SubMenu("AutoKS").AddItem(new MenuItem("UseEKS", "Use E").SetValue(true));
+            Menu.SubMenu("AutoKS").AddItem(new MenuItem("UseQEKS", "Use QE").SetValue(true));
+            Menu.SubMenu("AutoKS").AddItem(new MenuItem("UseRKS", "Use R").SetValue(true));
+            Menu.SubMenu("AutoKS").AddItem(new MenuItem("AutoKST", "AutoKS (toggle)!").SetValue(new KeyBind("U".ToCharArray()[0], KeyBindType.Toggle,true)));
             
             //Auto Flash Kill
-            Menu.SubMenu("AutoKS").AddItem(new MenuItem("UseFK1", "Q+E 闪现 击杀").SetValue(true));
-            Menu.SubMenu("AutoKS").AddItem(new MenuItem("UseFK2", "DFG+R 闪现 击杀").SetValue(true));
-            Menu.SubMenu("AutoKS").AddSubMenu(new Menu("使用闪现击杀", "FKT"));
-            foreach (var enemy in ObjectManager.Get<Obj_AI_Hero>().Where(enemy => enemy.Team != Player.Team))
-                Menu.SubMenu("AutoKS").SubMenu("FKT").AddItem(new MenuItem("FKT" + enemy.BaseSkinName, enemy.BaseSkinName).SetValue(true));
-            Menu.SubMenu("AutoKS").AddItem(new MenuItem("MaxE", "最大敌人数").SetValue(new Slider(2, 1, 5)));
-            Menu.SubMenu("AutoKS").AddItem(new MenuItem("FKMANA", "蓝量> FC时丨使用闪现击杀").SetValue(false));
+          //  Menu.SubMenu("AutoKS").AddItem(new MenuItem("UseFK1", "Q+E Flash Kill").SetValue(true));
+            //Menu.SubMenu("AutoKS").AddItem(new MenuItem("UseFK2", "DFG+R Flash Kill").SetValue(true));
+           // Menu.SubMenu("AutoKS").AddSubMenu(new Menu("Use Flash Kill on", "FKT"));
+           // foreach (var enemy in ObjectManager.Get<Obj_AI_Hero>().Where(enemy => enemy.Team != Player.Team))
+           //     Menu.SubMenu("AutoKS").SubMenu("FKT").AddItem(new MenuItem("FKT" + enemy.BaseSkinName, enemy.BaseSkinName).SetValue(true));
+          //  Menu.SubMenu("AutoKS").AddItem(new MenuItem("MaxE", "Max Enemies").SetValue(new Slider(2, 1, 5)));
+         //   Menu.SubMenu("AutoKS").AddItem(new MenuItem("FKMANA", "Only Flash if mana > FC").SetValue(false));
             
             //Misc
-            Menu.AddSubMenu(new Menu("杂 项", "Misc"));
-            Menu.SubMenu("Misc").AddItem(new MenuItem("AntiGap", "防 突進").SetValue(true));
-            Menu.SubMenu("Misc").AddItem(new MenuItem("Interrupt", "自动 打断法术").SetValue(true));
-            Menu.SubMenu("Misc").AddItem(new MenuItem("Packets", "使用 封包").SetValue(false));
-            Menu.SubMenu("Misc").AddItem(new MenuItem("IgniteALLCD", "假如所有技能CD丨只用点燃").SetValue(false));
-            if (Menu.Item("Orbwalker_Mode").GetValue<bool>()) Menu.SubMenu("Misc").AddItem(new MenuItem("OrbWAA", "平A 顺滑 走砍").SetValue(true));
-            Menu.SubMenu("Misc").AddItem(new MenuItem("Sound1", "声音 提示").SetValue(true));
-            Menu.SubMenu("Misc").AddItem(new MenuItem("Sound2", "游戏中的声音").SetValue(true));
-            Menu.SubMenu("Misc").AddItem(new MenuItem("YasuoWall", "亚索开启风墙丨不会击杀敌人").SetValue(true));
+            Menu.AddSubMenu(new Menu("Misc", "Misc"));
+            Menu.SubMenu("Misc").AddItem(new MenuItem("AntiGap", "Anti Gap Closer").SetValue(true));
+            Menu.SubMenu("Misc").AddItem(new MenuItem("Interrupt", "Auto Interrupt Spells").SetValue(true));
+            Menu.SubMenu("Misc").AddItem(new MenuItem("Packets", "Packet Casting").SetValue(false));
+            Menu.SubMenu("Misc").AddItem(new MenuItem("IgniteALLCD", "Only ignite if all skills on CD").SetValue(false));
+            if (Menu.Item("Orbwalker_Mode").GetValue<bool>()) Menu.SubMenu("Misc").AddItem(new MenuItem("OrbWAA", "AA while orbwalking").SetValue(true));
+            Menu.SubMenu("Misc").AddItem(new MenuItem("Sound1", "Startup Sound").SetValue(true));
+            Menu.SubMenu("Misc").AddItem(new MenuItem("Sound2", "In Game Sound").SetValue(true));
+            Menu.SubMenu("Misc").AddItem(new MenuItem("YasuoWall", "Don't try to use skillshots on Yasuo's Wall").SetValue(true));
             //QE Settings
-            Menu.AddSubMenu(new Menu("QE 设置", "QEsettings"));
-            Menu.SubMenu("QEsettings").AddItem(new MenuItem("QEDelay", "QE 延迟").SetValue(new Slider(0, 0, 150)));
-            Menu.SubMenu("QEsettings").AddItem(new MenuItem("QEMR", "QE 最大范围 %").SetValue(new Slider(100)));
-            Menu.SubMenu("QEsettings").AddItem(new MenuItem("UseQEC", "对鼠标附近敌人丨使用QE").SetValue(new KeyBind("T".ToCharArray()[0], KeyBindType.Press)));
+            Menu.AddSubMenu(new Menu("QE Settings", "QEsettings"));
+            Menu.SubMenu("QEsettings").AddItem(new MenuItem("QEDelay", "QE Delay").SetValue(new Slider(0, 0, 170)));
+            Menu.SubMenu("QEsettings").AddItem(new MenuItem("QEMR", "QE Max Range %").SetValue(new Slider(100)));
+            Menu.SubMenu("QEsettings").AddItem(new MenuItem("UseQEC", "QE to Enemy Near Cursor").SetValue(new KeyBind("T".ToCharArray()[0], KeyBindType.Press)));
 
             //R
-            Menu.AddSubMenu(new Menu("R 设置", "Rsettings"));
-            Menu.SubMenu("Rsettings").AddSubMenu(new Menu("假如敌人能被击杀丨不使用R", "DontRw"));
-            Menu.SubMenu("Rsettings").SubMenu("DontRw").AddItem(new MenuItem("DontRwParam", "来自 伤害").SetValue(new StringList(new[] { "All", "Either one", "None" })));
+            Menu.AddSubMenu(new Menu("R Settings", "Rsettings"));
+            Menu.SubMenu("Rsettings").AddSubMenu(new Menu("Dont R if it can be killed with", "DontRw"));
+            Menu.SubMenu("Rsettings").SubMenu("DontRw").AddItem(new MenuItem("DontRwParam", "Damage From").SetValue(new StringList(new[] { "All", "Either one", "None" })));
             Menu.SubMenu("Rsettings").SubMenu("DontRw").AddItem(new MenuItem("DontRwQ", "Q").SetValue(true));
             Menu.SubMenu("Rsettings").SubMenu("DontRw").AddItem(new MenuItem("DontRwW", "W").SetValue(true));
             Menu.SubMenu("Rsettings").SubMenu("DontRw").AddItem(new MenuItem("DontRwE", "E").SetValue(true));
             Menu.SubMenu("Rsettings").SubMenu("DontRw").AddItem(new MenuItem("DontRwA", "1 x AA").SetValue(true));
 
-            Menu.SubMenu("Rsettings").AddSubMenu(new Menu("不对谁使用R", "DontR"));
+            Menu.SubMenu("Rsettings").AddSubMenu(new Menu("Dont use R on", "DontR"));
             foreach (var enemy in ObjectManager.Get<Obj_AI_Hero>().Where(enemy => enemy.Team != Player.Team))
                 Menu.SubMenu("Rsettings").SubMenu("DontR").AddItem(new MenuItem("DontR" + enemy.BaseSkinName, enemy.BaseSkinName).SetValue(false));
-            Menu.SubMenu("Rsettings").AddSubMenu(new Menu("当目标有以下状态不使用R", "DontRbuff"));
-            Menu.SubMenu("Rsettings").SubMenu("DontRbuff").AddItem(new MenuItem("DontRbuffUndying", "蛮王大招").SetValue(true));
-            Menu.SubMenu("Rsettings").SubMenu("DontRbuff").AddItem(new MenuItem("DontRbuffJudicator", "凯尔大招").SetValue(true));
-            Menu.SubMenu("Rsettings").SubMenu("DontRbuff").AddItem(new MenuItem("DontRbuffAlistar", "基兰大招").SetValue(true));
-            Menu.SubMenu("Rsettings").SubMenu("DontRbuff").AddItem(new MenuItem("DontRbuffZilean", "牛哥大招").SetValue(true));
-            Menu.SubMenu("Rsettings").SubMenu("DontRbuff").AddItem(new MenuItem("DontRbuffZac", "扎克被动").SetValue(true));
-            Menu.SubMenu("Rsettings").SubMenu("DontRbuff").AddItem(new MenuItem("DontRbuffAttrox", "剑魔被动").SetValue(true));
-            Menu.SubMenu("Rsettings").SubMenu("DontRbuff").AddItem(new MenuItem("DontRbuffSivir", "轮子妈 E").SetValue(true));
-            Menu.SubMenu("Rsettings").SubMenu("DontRbuff").AddItem(new MenuItem("DontRbuffMorgana", "莫干娜 E").SetValue(true));
-            Menu.SubMenu("Rsettings").AddSubMenu(new Menu("直接击杀丨目标血量= xx%", "okR"));
+            Menu.SubMenu("Rsettings").AddSubMenu(new Menu("Dont use if target has", "DontRbuff"));
+            Menu.SubMenu("Rsettings").SubMenu("DontRbuff").AddItem(new MenuItem("DontRbuffUndying", "Trynda's Ult").SetValue(true));
+            Menu.SubMenu("Rsettings").SubMenu("DontRbuff").AddItem(new MenuItem("DontRbuffJudicator", "Kayle's Ult").SetValue(true));
+            Menu.SubMenu("Rsettings").SubMenu("DontRbuff").AddItem(new MenuItem("DontRbuffAlistar", "Zilean's Ult").SetValue(true));
+            Menu.SubMenu("Rsettings").SubMenu("DontRbuff").AddItem(new MenuItem("DontRbuffZilean", "Alistar's Ult").SetValue(true));
+            Menu.SubMenu("Rsettings").SubMenu("DontRbuff").AddItem(new MenuItem("DontRbuffZac", "Zac's Passive").SetValue(true));
+            Menu.SubMenu("Rsettings").SubMenu("DontRbuff").AddItem(new MenuItem("DontRbuffAttrox", "Attrox's Passive").SetValue(true));
+            Menu.SubMenu("Rsettings").SubMenu("DontRbuff").AddItem(new MenuItem("DontRbuffSivir", "Sivir's Spell Shield").SetValue(true));
+            Menu.SubMenu("Rsettings").SubMenu("DontRbuff").AddItem(new MenuItem("DontRbuffMorgana", "Morgana's Black Shield").SetValue(true));
+            Menu.SubMenu("Rsettings").AddSubMenu(new Menu("OverKill target by xx%", "okR"));
             foreach (var enemy in ObjectManager.Get<Obj_AI_Hero>().Where(enemy => enemy.Team != Player.Team))
                 Menu.SubMenu("Rsettings").SubMenu("okR").AddItem(new MenuItem("okR" + enemy.BaseSkinName, enemy.BaseSkinName).SetValue(new Slider(0)));
 
             //Drawings
-            Menu.AddSubMenu(new Menu("范 围", "Drawing"));
-            Menu.SubMenu("Drawing").AddItem(new MenuItem("DrawQ", "Q 范围").SetValue(new Circle(true, Color.FromArgb(100, 255, 0, 255))));
-            Menu.SubMenu("Drawing").AddItem(new MenuItem("DrawW", "W 范围").SetValue(new Circle(false, Color.FromArgb(100, 255, 0, 255))));
-            Menu.SubMenu("Drawing").AddItem(new MenuItem("DrawE", "E 范围").SetValue(new Circle(false, Color.FromArgb(100, 255, 0, 255))));
-            Menu.SubMenu("Drawing").AddItem(new MenuItem("DrawR", "R 范围").SetValue(new Circle(false, Color.FromArgb(100, 255, 0, 255))));
-            Menu.SubMenu("Drawing").AddItem(new MenuItem("DrawQE", "QE 范围").SetValue(new Circle(true, Color.FromArgb(100, 255, 0, 255))));
-            Menu.SubMenu("Drawing").AddItem(new MenuItem("DrawQEC", "QE 光标指示").SetValue(new Circle(false, Color.FromArgb(100, 255, 0, 255))));
-            Menu.SubMenu("Drawing").AddItem(new MenuItem("DrawQEMAP", "QE 目标参数").SetValue(true));
-            Menu.SubMenu("Drawing").AddItem(new MenuItem("DrawWMAP", "W 目标参数").SetValue(true));
-            Menu.SubMenu("Drawing").AddItem(new MenuItem("Gank", "Gank指示器").SetValue(true));
-            Menu.SubMenu("Drawing").AddItem(new MenuItem("DrawHPFill", "连招伤害显示").SetValue(true));
-            Menu.SubMenu("Drawing").AddItem(new MenuItem("HUD", "单挑 显示").SetValue(true));
-            Menu.SubMenu("Drawing").AddItem(new MenuItem("KillText", "击杀文本").SetValue(true));
-            Menu.SubMenu("Drawing").AddItem(new MenuItem("KillTextHP", "连招后文本显示HP= %").SetValue(true));
-            Menu.SubMenu("Drawing").AddItem(new MenuItem("drawing", "连招文本").SetValue(false));
+            Menu.AddSubMenu(new Menu("Drawings", "Drawing"));
+            Menu.SubMenu("Drawing").AddItem(new MenuItem("DrawQ", "Q Range").SetValue(new Circle(true, Color.FromArgb(100, 255, 0, 255))));
+            Menu.SubMenu("Drawing").AddItem(new MenuItem("DrawW", "W Range").SetValue(new Circle(false, Color.FromArgb(100, 255, 0, 255))));
+            Menu.SubMenu("Drawing").AddItem(new MenuItem("DrawE", "E Range").SetValue(new Circle(false, Color.FromArgb(100, 255, 0, 255))));
+            Menu.SubMenu("Drawing").AddItem(new MenuItem("DrawR", "R Range").SetValue(new Circle(false, Color.FromArgb(100, 255, 0, 255))));
+            Menu.SubMenu("Drawing").AddItem(new MenuItem("DrawQE", "QE Range").SetValue(new Circle(true, Color.FromArgb(100, 255, 0, 255))));
+            Menu.SubMenu("Drawing").AddItem(new MenuItem("DrawQEC", "QE Cursor indicator").SetValue(new Circle(false, Color.FromArgb(100, 255, 0, 255))));
+            Menu.SubMenu("Drawing").AddItem(new MenuItem("DrawQEMAP", "QE Target Parameters").SetValue(true));
+            Menu.SubMenu("Drawing").AddItem(new MenuItem("DrawWMAP", "W Target Parameters").SetValue(true));
+            Menu.SubMenu("Drawing").AddItem(new MenuItem("Gank", "Gankable Enemy Indicator").SetValue(true));
+            Menu.SubMenu("Drawing").AddItem(new MenuItem("DrawHPFill", "After Combo HP Fill").SetValue(true));
+            Menu.SubMenu("Drawing").AddItem(new MenuItem("HUD", "Heads-up Display").SetValue(true));
+            Menu.SubMenu("Drawing").AddItem(new MenuItem("KillText", "Kill Text").SetValue(true));
+            Menu.SubMenu("Drawing").AddItem(new MenuItem("KillTextHP", "% HP After Combo Text").SetValue(true));
+            Menu.SubMenu("Drawing").AddItem(new MenuItem("drawing", "Draw combo text").SetValue(false));
 
             //Add main menu
             Menu.AddToMainMenu();
             if (Menu.Item("Sound1").GetValue<bool>()) PlaySound(welcome);
             GameObject.OnCreate += OnCreate;
             GameObject.OnDelete += OnDelete;
+            Game.OnUpdate += Game_OnGameUpdate;
             Drawing.OnDraw += Drawing_OnDraw;
             Obj_AI_Base.OnProcessSpellCast += Obj_AI_Base_OnProcessSpellCast;
             AntiGapcloser.OnEnemyGapcloser += AntiGapcloser_OnEnemyGapcloser;
             Interrupter.OnPossibleToInterrupt += Interrupter_OnPossibleToInterrupt;
-            if (Menu.Item("Orbwalker_Mode").GetValue<bool>()) Orbwalking.BeforeAttack += Orbwalking_BeforeAttack;
+            //if (Menu.Item("Orbwalker_Mode").GetValue<bool>()) Orbwalking.BeforeAttack += Orbwalking_BeforeAttack;
 
-            Game.PrintChat("<font color = \"#FF0020\">Gagong Syndra</font> by stephenjason89<font color = \"#22FF10\">花边汉化-Gagone辛德拉</font>");
+            Game.PrintChat("<font color = \"#FF0020\">Gagong Syndra</font> by <font color = \"#22FF10\">stephenjason89</font>");
             Game.PrintChat("<font color = \"#FF00FF\">Updates by RaZer</font>");
+            Game.PrintChat("<font color = \"#FF0020\">Two upgrade</font> By <font color = \"#FF00FF\"> HuaBian</font>");
         }
 
                private static void ChooseOrbwalker(bool mode)
@@ -237,7 +239,6 @@ namespace GagongSyndra
                 harassKey = Menu.Item("Farm");
                 laneclearKey = Menu.Item("LaneClear");
                 lanefreezeKey = Menu.Item("LaneClear");
-                Game.PrintChat("Regular Orbwalker Loaded");
             }
             else
             {
@@ -246,7 +247,6 @@ namespace GagongSyndra
                 harassKey = Menu.Item("Harass_Key");
                 laneclearKey = Menu.Item("LaneClear_Key");
                 lanefreezeKey = Menu.Item("LaneFreeze_Key");
-                Game.PrintChat("xSLx Orbwalker Loaded");
             }
         }
         
@@ -760,7 +760,7 @@ namespace GagongSyndra
                         enemy, Menu.Item("UseQKS").GetValue<bool>(), false, Menu.Item("UseEKS").GetValue<bool>(), false,
                         false) > enemy.Health) || !Menu.Item("UseFK1").GetValue<bool>()) &&
                     (!(GetComboDamage(enemy, false, false, false, Menu.Item("UseRKS").GetValue<bool>()) > enemy.Health) ||
-                     !Menu.Item("UseFK2").GetValue<bool>() ||
+                    // !Menu.Item("UseFK2").GetValue<bool>() ||
                      !(Player.Distance(ePos.UnitPosition, true) <= Math.Pow(R.Range + 390, 2)) ||
                      Environment.TickCount - R.LastCastAttemptT <= Game.Ping + 750 ||
                      Environment.TickCount - QE.LastCastAttemptT <= Game.Ping + 750 ||
@@ -1067,15 +1067,15 @@ namespace GagongSyndra
                                 barcolor = Color.FromArgb(130, 255, 70, 0);
                                 linecolor = Color.FromArgb(150, 255, 0, 0);
                             }
-                            if (Menu.Item("Gank").GetValue<bool>())
-                            {
-                                var pos = Player.Position +
-                                              Vector3.Normalize(enemy.Position - Player.Position) * 100;
-                                var myPos = Drawing.WorldToScreen(pos);
-                                pos = Player.Position + Vector3.Normalize(enemy.Position - Player.Position) * 350;
-                                var ePos = Drawing.WorldToScreen(pos);
-                                Drawing.DrawLine(myPos.X, myPos.Y, ePos.X, ePos.Y, 1, linecolor);
-                            }
+                          //  if (Menu.Item("Gank").GetValue<bool>())
+                          //  {
+                          //      var pos = Player.Position +
+                          //                    Vector3.Normalize(enemy.Position - Player.Position) * 100;
+                          //      var myPos = Drawing.WorldToScreen(pos);
+                          //      pos = Player.Position + Vector3.Normalize(enemy.Position - Player.Position) * 350;
+                          //      var ePos = Drawing.WorldToScreen(pos);
+                          //      Drawing.DrawLine(myPos.X, myPos.Y, ePos.X, ePos.Y, 1, linecolor);
+                          //  }
                         }
                         var killTextPos = Drawing.WorldToScreen(enemy.Position);
                         var hPleftText = Math.Round(PercentHPleftAfterCombo * 100) + "%";
